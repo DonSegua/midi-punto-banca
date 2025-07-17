@@ -1,0 +1,609 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Midi Punto y Banca Versión 8791.21.72</title>
+<style>
+body { font-family: Arial, sans-serif; background: #1b1b1b; color: #fff; padding: 10px; }
+h1 { color: #ffc107; }
+.menu { background: #333; padding: 15px; border-radius: 10px; }
+button { background: #ffc107; color: #000; padding: 12px; margin: 5px 0; width: 100%; border: none; border-radius: 5px; font-size: 1.1em; }
+.output { margin-top: 20px; background: #222; padding: 15px; border-radius: 10px; overflow-y: auto; max-height: 500px; }
+.card { margin:3px; background:#fff; padding:5px; border-radius:5px; }
+.correcto { color: #4CAF50; font-weight: bold; }
+.incorrecto { color: #F44336; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1> 🎰 Midi Punto y Banca Versión 8791.21.72 🎰</h1>
+
+<div class="menu" id="mainMenu">
+  <button onclick="showBases()">📚 Bases del Juego</button>
+  <button onclick="showPracticas()">🎯 Prácticas</button>
+</div>
+
+<div class="menu" id="basesMenu" style="display:none;">
+  <button onclick="showTexto('consiste')">¿En qué consiste?</button>
+  <button onclick="showTexto('pedida')">Bases de la Pedida de Carta</button>
+  <button onclick="showTexto('pago5')">Pago del 5%</button>
+  <button onclick="showTexto('figuras')">Figuras para el TIE</button>
+  <button onclick="volver()">⬅️ Volver</button>
+</div>
+
+<div class="menu" id="practicasMenu" style="display:none;">
+  <button onclick="practicaPedida()">Pedida de Cartas</button>
+  <button onclick="practicaPago5()">Pago con 5%</button>
+  <button onclick="practicaTIE()">Pago del TIE</button>
+  <button onclick="volver()">⬅️ Volver</button>
+</div>
+
+<div class="output" id="output"></div>
+
+<script>
+const palos = ['C','D','H','S'];
+let juego = {};
+
+function volver(){
+  document.getElementById('mainMenu').style.display='block';
+  document.getElementById('basesMenu').style.display='none';
+  document.getElementById('practicasMenu').style.display='none';
+  document.getElementById('output').innerHTML='';
+}
+
+function showBases(){
+  document.getElementById('mainMenu').style.display='none';
+  document.getElementById('basesMenu').style.display='block';
+  document.getElementById('output').innerHTML='';
+}
+
+function showPracticas(){
+  document.getElementById('mainMenu').style.display='none';
+  document.getElementById('practicasMenu').style.display='block';
+  document.getElementById('output').innerHTML='';
+}
+
+function showTexto(opcion){
+let txt='';
+  if(opcion==='consiste'){
+  txt=`
+  <b>El Midi Punto y Banca</b> es una variante del clásico juego de Punto y Banca o Baccarat, diseñada específicamente para mesas más pequeñas o para un ritmo de juego más ágil.<br><br>
+
+  Es popular en casinos de Latinoamérica, Asia y Europa. También se conoce como Mini Baccarat en otros mercados, pero el “Midi” implica un formato intermedio entre el Mini y el Baccarat tradicional.<br><br>
+
+  <b>🎯 ¿En qué consiste el juego?</b><br><br>
+
+  <b>Objetivo:</b><br>
+  El jugador apuesta a quién ganará la partida:
+  <ul>
+  <li>Punto (Jugador)</li>
+  <li>Banca (Casa)</li>
+  <li>Empate (TIE)</li>
+  </ul>
+
+  Ganará la mano que sume más cercano a 9 puntos.<br>
+  Si ambos suman igual, es un empate.<br><br>
+
+  <b>🃏 Valor de las cartas:</b>
+  <ul>
+  <li>Ases: 1 punto</li>
+  <li>Del 2 al 9: valor numérico</li>
+  <li>10, J, Q, K: 0 puntos</li>
+  </ul>
+
+  <small>Si la suma da más de 9, se elimina la decena. Ej: 7+8=15 → cuenta como 5</small><br><br>
+
+  <b>📝 Desarrollo del juego:</b>
+  <ol>
+  <li>Apuestas: Punto, Banca o Empate.</li>
+  <li>Reparto: 2 cartas al Punto y 2 a la Banca.</li>
+  <li>Pedida de tercera carta: Se siguen reglas fijas, no depende del jugador.</li>
+  </ol>
+
+  <b>📋 Reglas de tercera carta:</b><br><br>
+
+  <b>Para el Punto:</b>
+  <ul>
+  <li>0-5: pide carta</li>
+  <li>6-7: se planta</li>
+  <li>8-9: Natural (gana automáticamente)</li>
+  </ul>
+
+  <b>Para la Banca:</b><br>
+  Depende de su puntaje y de la tercera carta del Punto.
+  <table border="1" style="border-collapse:collapse; text-align:center;">
+  <tr><th>Suma Banca</th><th>¿Pide carta?</th></tr>
+  <tr><td>0-2</td><td>Sí</td></tr>
+  <tr><td>3-6</td><td>Depende de la carta del Punto</td></tr>
+  <tr><td>7</td><td>No</td></tr>
+  <tr><td>8-9</td><td>Natural</td></tr>
+  </table><br>
+
+  <b>💰 Pagos:</b><br>
+  <table border="1" style="border-collapse:collapse; text-align:center;">
+  <tr><th>Apuesta</th><th>Pago</th></tr>
+  <tr><td>Punto</td><td>1 a 1</td></tr>
+  <tr><td>Banca</td><td>1 a 1 (menos 5% comisión)</td></tr>
+  <tr><td>Empate</td><td>8 a 1 o 9 a 1 (según casino)</td></tr>
+  </table><br>
+
+  <b>🔍 Diferencias con el Baccarat Clásico:</b><br><br>
+
+  <table border="1" style="border-collapse:collapse; text-align:center;">
+  <tr><th>Baccarat Clásico</th><th>Midi Punto y Banca</th></tr>
+  <tr><td>Jugadores reparten</td><td>Croupier reparte todo</td></tr>
+  <tr><td>Apuesta mínima alta</td><td>Apuesta mínima baja</td></tr>
+  <tr><td>Juego más lento</td><td>Juego ágil y rápido</td></tr>
+  <tr><td>Mesa grande</td><td>Mesa tipo blackjack</td></tr>
+  </table><br>
+
+  <b>¿Por qué "Midi"?</b><br>
+  Es un formato intermedio entre el Mini Punto y Banca y el Baccarat tradicional.<br><br>
+
+  <b>✅ Resumen práctico:</b>
+  <ul>
+  <li>Juego ágil y simple</li>
+  <li>No requiere estrategia</li>
+  <li>Croupier dirige todo</li>
+  <li>Importante calcular el 5% en la Banca</li>
+  </ul>
+  `;
+  }
+ else if(opcion==='pedida'){
+    txt=`
+    <b>🃏 Bases de la Pedida de Cartas</b><br><br>
+
+    En el <b>Midi Punto y Banca</b>, la pedida de tercera carta es automática y sigue reglas fijas.<br><br>
+
+    <b>📌 Regla general:</b><br>
+    Si alguno de los dos (Punto o Banca) tiene <b>8 o 9</b> con las dos primeras cartas, se considera <b>tendida</b>.<br>
+    En ese caso, <b>no se pide más carta</b> y el juego se resuelve automáticamente.<br><br>
+
+    <b>🔢 Cómo se cuentan las cartas:</b><br>
+    Se suma el valor de las cartas y si el total es mayor a 9, se elimina la decena.<br>
+    Ejemplo: 7 + 8 = 15 → cuenta como <b>5</b>.<br><br>
+
+    ---
+
+    <b>📋 Tabla de pedidas del Punto (Público):</b><br><br>
+
+    <table border="1" cellpadding="5" cellspacing="0">
+    <tr><th>Puntaje del Punto</th><th>Acción</th></tr>
+    <tr><td>0 - 5</td><td><b>Pide tercera carta</b></td></tr>
+    <tr><td>6 - 7</td><td><b>Se planta</b></td></tr>
+    <tr><td>8 - 9</td><td><b>Tendida</b> (no se piden más cartas)</td></tr>
+    </table><br>
+
+    ---
+
+    <b>📋 Tabla de pedidas de la Banca:</b><br>
+
+    <b>Si el Punto NO pidió tercera carta:</b><br>
+
+    <table border="1" cellpadding="5" cellspacing="0">
+    <tr><th>Puntaje de la Banca</th><th>Acción</th></tr>
+    <tr><td>0 - 5</td><td><b>Pide tercera carta</b></td></tr>
+    <tr><td>6 - 7</td><td><b>Se planta</b></td></tr>
+    <tr><td>8 - 9</td><td><b>Tendida</b> (no se piden más cartas)</td></tr>
+    </table><br>
+
+    ---
+
+    <b>Si el Punto SÍ pidió tercera carta:</b><br>
+
+    <table border="1" cellpadding="5" cellspacing="0">
+    <tr><th>Puntaje de la Banca</th><th>Tercera Carta del Punto</th><th>Acción de la Banca</th></tr>
+    <tr><td>0 - 2</td><td>Cualquier carta</td><td><b>Pide</b></td></tr>
+    <tr><td>3</td><td>8</td><td><b>Planta</b></td></tr>
+    <tr><td>3</td><td>Otra carta</td><td><b>Pide</b></td></tr>
+    <tr><td>4</td><td>0, 1, 8 o 9</td><td><b>Planta</b></td></tr>
+    <tr><td>4</td><td>2 - 7</td><td><b>Pide</b></td></tr>
+    <tr><td>5</td><td>0, 1, 2, 3, 8 o 9</td><td><b>Planta</b></td></tr>
+    <tr><td>5</td><td>4 - 7</td><td><b>Pide</b></td></tr>
+    <tr><td>6</td><td>6 o 7</td><td><b>Pide</b></td></tr>
+    <tr><td>6</td><td>Otra carta</td><td><b>Planta</b></td></tr>
+    <tr><td>7</td><td>Cualquier carta</td><td><b>Planta</b></td></tr>
+    <tr><td>8 - 9</td><td>Tendida</td><td><b>No hay más cartas</b></td></tr>
+    </table><br>
+
+    ---
+
+    <b>🔍 Resumen:</b><br>
+
+    <ul>
+    <li><b>0-2 Banca</b>: Siempre pide.</li>
+    <li><b>3 Banca</b>: Planta sólo si el Punto sacó un 8.</li>
+    <li><b>4 Banca</b>: Planta si el Punto sacó 8, 9, 0 o A.</li>
+    <li><b>5 Banca</b>: Planta si el Punto sacó 0, 1, 2, 3, 8 o 9.</li>
+    <li><b>6 Banca</b>: Sólo pide si el Punto sacó 6 o 7.</li>
+    <li><b>7 Banca</b>: Siempre planta.</li>
+    </ul>
+
+    <b>🎯 Importante:</b><br>
+    Estas reglas son obligatorias y no dependen de decisiones del jugador. El croupier debe aplicarlas automáticamente y con fluidez.
+    `;
+    }
+else if(opcion==='pago5'){
+txt=`
+<b>💰 Pago del 5% a la Banca</b><br><br>
+
+Cuando gana la <b>Banca</b>, el casino cobra una comisión del <b>5%</b> sobre la ganancia del jugador.<br><br>
+
+Una forma rápida de calcularlo es restar a la postura original la <b>mitad del 10%</b>.<br><br>
+
+<b>🔹 Ejemplo básico:</b><br>
+Apuesta de <b>$70.000</b>:<br>
+$70.000 – ($7.000 ÷ 2) = <b>$66.500</b><br><br>
+
+<b>🧠 Posturas básicas:</b><br>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr><th>Postura</th><th>Pago</th><th>Descuento</th></tr>
+<tr><td>$10.000</td><td>$9.500</td><td>$500</td></tr>
+<tr><td>$20.000</td><td>$19.000</td><td>$1.000</td></tr>
+<tr><td>$30.000</td><td>$28.500</td><td>$1.500</td></tr>
+<tr><td>$40.000</td><td>$38.000</td><td>$2.000</td></tr>
+<tr><td>$50.000</td><td>$47.500</td><td>$2.500</td></tr>
+<tr><td>$60.000</td><td>$57.000</td><td>$3.000</td></tr>
+<tr><td>$70.000</td><td>$66.500</td><td>$3.500</td></tr>
+<tr><td>$80.000</td><td>$76.000</td><td>$4.000</td></tr>
+<tr><td>$90.000</td><td>$85.500</td><td>$4.500</td></tr>
+</table><br><br>
+
+<b>🔧 Técnica: La chica paga la grande</b><br><br>
+
+<b>Ejemplo con $250.000:</b><br>
+1️⃣ Separar: $200.000 + $50.000<br>
+2️⃣ Pago de $50.000 → $47.500<br>
+3️⃣ Descuento de $200.000 → $10.000<br>
+4️⃣ $47.500 – $10.000 = $37.500<br>
+5️⃣ $37.500 + $200.000 = <b>$237.500</b><br><br>
+
+<b>⚠️ ¿Cuándo no usar la técnica?</b><br>
+Si el descuento de la grande es mayor al pago de la chica, se suman por separado.<br><br>
+
+<b>Ejemplo con $710.000:</b><br>
+Descuento de $700.000 = $35.000<br>
+Pago de $10.000 = $9.500<br>
+Se suma por separado: $665.000 + $9.500 = <b>$674.500</b><br><br>
+
+<b>Ejemplo con $920.000:</b><br>
+Descuento de $900.000 = $45.000<br>
+Pago de $20.000 = $19.000<br>
+Se suma por separado: $855.000 + $19.000 = <b>$874.000</b><br><br>
+
+<b>🎯 Objetivo del croupier:</b><br>
+<ul>
+<li>Anticipar el descuento de la grande</li>
+<li>Ver si la chica cubre el descuento</li>
+<li>Decidir entre restar o sumar por separado</li>
+<li>Dominar esta operación en la práctica</li>
+</ul>
+`;
+}
+else if(opcion==='figuras'){
+txt=`
+<b>🎲 Figuras para el Pago del TIE</b><br><br>
+
+Cuando se produce un <b>Empate (TIE)</b>, el pago es <b>8 a 1</b> sobre la cantidad apostada.<br><br>
+
+<b>Figuras básicas a memorizar:</b><br>
+
+<table border="1" cellpadding="5" cellspacing="0">
+<tr><th>Apuesta</th><th>Pago</th></tr>
+<tr><td>$500</td><td>$4.000</td></tr>
+<tr><td>$1.000</td><td>$8.000</td></tr>
+<tr><td>$1.500</td><td>$12.000</td></tr>
+<tr><td>$5.000</td><td>$40.000</td></tr>
+</table><br>
+
+Estas figuras ayudan al croupier a realizar pagos rápidos y precisos, sobre todo en posturas altas.<br><br>
+
+<b>🧠 ¿Cómo usar las figuras?</b><br><br>
+
+<ul>
+<li>Para un TIE de $1.500, simplemente recuerdas la figura: <b>$12.000</b></li>
+<li>Para un TIE de $15.000, es como un $1.500 pero agregándole un cero: <b>$120.000</b></li>
+<li>Para un TIE de $2.500, combinas dos figuras:<br>
+$2.000 = $16.000 + $500 = $4.000 → Total <b>$20.000</b></li>
+<li>Para un TIE de $3.500:<br>
+$3.000 = $24.000 + $500 = $4.000 → Total <b>$28.000</b></li>
+<li>Para un TIE de $22.500:<br>
+$20.000 = $160.000 + $2.000 = $16.000 + $500 = $4.000 → Total <b>$180.000</b></li>
+<li>Para un TIE de $150.000:<br>
+$100.000 = $800.000 + $50.000 = $400.000 → Total <b>$1.200.000</b></li>
+</ul>
+
+<b>🎯 Consejo:</b> Memoriza las figuras clave y usa combinaciones simples para facilitar los pagos del TIE.
+`;
+}
+document.getElementById('output').innerHTML=txt;
+}
+
+function carta(){
+  let valor = Math.floor(Math.random()*13)+1;
+  let palo = palos[Math.floor(Math.random()*4)];
+  return {valor:valor, palo:palo};
+}
+
+function valorCarta(valor){
+  return valor >=10 ? 0 : valor;
+}
+
+  function cartaImg(c){
+    let nombre;
+    if(c.valor==1) nombre='A';
+    else if(c.valor==11) nombre='jack';
+    else if(c.valor==12) nombre='queen';
+    else if(c.valor==13) nombre='king';
+    else nombre=c.valor;
+
+    let palosNombres={'C':'clubs','D':'diamonds','H':'hearts','S':'spades'};
+
+    return `<img src="cartas/${nombre}_of_${palosNombres[c.palo]}.png" width="60" style="background:white; border-radius:5px; padding:3px;">`;
+  }
+
+// PRACTICA DE PEDIDA DE CARTAS MODIFICADA
+  function practicaPedida(){
+    juego.p1 = carta();
+    juego.p2 = carta();
+    juego.b1 = carta();
+    juego.b2 = carta();
+
+    juego.sumaP = (valorCarta(juego.p1.valor) + valorCarta(juego.p2.valor)) % 10;
+    juego.sumaB = (valorCarta(juego.b1.valor) + valorCarta(juego.b2.valor)) % 10;
+
+    juego.terceraP = null;
+    juego.terceraB = null;
+
+    mostrarDecisionPunto();
+  }
+
+  function mostrarCartasPedida(){
+    let html = `<b>Punto:</b> ${cartaImg(juego.p1)} ${cartaImg(juego.p2)}`;
+    if(juego.terceraP) html += ` ${cartaImg(juego.terceraP)}`;
+    html += ` (suma: ${juego.sumaP})<br>`;
+
+    html += `<b>Banca:</b> ${cartaImg(juego.b1)} ${cartaImg(juego.b2)}`;
+    if(juego.terceraB) html += ` ${cartaImg(juego.terceraB)}`;
+    html += ` (suma: ${juego.sumaB})<br><br>`;
+
+    return html;
+  }
+
+  function mostrarDecisionPunto(){
+    let html = mostrarCartasPedida();
+
+    if(juego.sumaP >= 8 || juego.sumaB >= 8){
+      html += `<b>Tendida detectada (8 o 9).</b><br>`;
+      html += `Por norma se planta, pero selecciona la opción correcta:<br>`;
+      html += `<button onclick="pedidaP('planta')">Plantarse - Punto</button><br>`;
+      html += `<button onclick="pedidaP('pide')">Pedir Carta - Punto</button>`;
+    } else {
+      html += `¿Qué debe hacer el Punto?<br>`;
+      html += `<button onclick="pedidaP('pide')">Pedir Carta - Punto</button><br>`;
+      html += `<button onclick="pedidaP('planta')">Plantarse - Punto</button>`;
+    }
+
+    document.getElementById('output').innerHTML = html;
+  }
+
+  function pedidaP(eleccion){
+    let correcta = (juego.sumaP <=5) ? 'pide' : 'planta';
+    if(juego.sumaP >=8 || juego.sumaB >=8) correcta = 'planta';
+
+    if(eleccion === correcta){
+      if(eleccion === 'pide'){
+        juego.terceraP = carta();
+        juego.sumaP = (juego.sumaP + valorCarta(juego.terceraP.valor)) % 10;
+      }
+      mostrarDecisionBanca();
+    } else {
+      let html = mostrarCartasPedida();
+      html += `<div class="incorrecto">❌ Incorrecto. Vuelve a intentarlo.</div>`;
+      html += `<button onclick="mostrarDecisionPunto()">Reintentar</button>`;
+      document.getElementById('output').innerHTML = html;
+    }
+  }
+
+  function mostrarDecisionBanca(){
+    let html = mostrarCartasPedida();
+
+    // No detener el flujo si con la tercera del Punto se hace un 8 o 9:
+    html += `¿Qué debe hacer la Banca?<br>`;
+    html += `<button onclick="pedidaB('pide')">Pedir Carta - Banca</button><br>`;
+    html += `<button onclick="pedidaB('planta')">Plantarse - Banca</button>`;
+
+    document.getElementById('output').innerHTML = html;
+  }
+
+  function pedidaB(eleccion){
+    let decisionBanca = decidirBanca();
+
+    if(eleccion === decisionBanca){
+      if(eleccion === 'pide'){
+        juego.terceraB = carta();
+        juego.sumaB = (juego.sumaB + valorCarta(juego.terceraB.valor)) % 10;
+      }
+      mostrarGanadorFinal();
+    } else {
+      let html = mostrarCartasPedida();
+      html += `<div class="incorrecto">❌ Incorrecto. Vuelve a intentarlo.</div>`;
+      html += `<button onclick="mostrarDecisionBanca()">Reintentar</button>`;
+      document.getElementById('output').innerHTML = html;
+    }
+  }
+
+  function decidirBanca(){
+    let sB = juego.sumaB;
+    let tP = juego.terceraP ? valorCarta(juego.terceraP.valor) : null;
+
+    // No detener si se construye 8 o 9 con tercera carta del Punto
+    if(!juego.terceraP){
+      if(sB <=5) return 'pide';
+      else return 'planta';
+    }
+
+    if(sB<=2) return 'pide';
+    if(sB==3) return (tP==8)?'planta':'pide';
+    if(sB==4) return (tP>=2 && tP<=7)?'pide':'planta';
+    if(sB==5) return (tP>=4 && tP<=7)?'pide':'planta';
+    if(sB==6) return (tP==6 || tP==7)?'pide':'planta';
+    return 'planta';
+  }
+
+  function mostrarGanadorFinal(){
+    let html = mostrarCartasPedida();
+    html += `¿Quién ganó?<br>`;
+    html += `<button onclick="evaluarGanadorFinal('punto')">Gana Punto</button><br>`;
+    html += `<button onclick="evaluarGanadorFinal('banca')">Gana Banca</button><br>`;
+    html += `<button onclick="evaluarGanadorFinal('tie')">Empate</button>`;
+    document.getElementById('output').innerHTML = html;
+  }
+
+  function evaluarGanadorFinal(eleccion){
+    let res = (juego.sumaP>juego.sumaB)?'punto':(juego.sumaB>juego.sumaP)?'banca':'tie';
+    let html = mostrarCartasPedida();
+    if(eleccion===res){
+      html += `<div class="correcto">✅ Correcto. Ganó ${res.toUpperCase()}.</div>`;
+    } else {
+      html += `<div class="incorrecto">❌ Incorrecto. Ganó ${res.toUpperCase()}.</div>`;
+    }
+    document.getElementById('output').innerHTML = html;
+  }
+  // Variables de control para el ciclo de 10 ejercicios
+  let contadorEjercicios = 0;
+  let contadorMenores30 = 0;
+  let contadorEntre30y200 = 0;
+  let contadorMayores200 = 0;
+
+  function practicaPago5(){
+    contadorEjercicios++;
+
+    if (contadorEjercicios % 10 === 1) {
+      // Reiniciar los contadores cada 10 ejercicios
+      contadorMenores30 = 0;
+      contadorEntre30y200 = 0;
+      contadorMayores200 = 0;
+    }
+
+    let m;
+
+    // Elegir tipo de monto controlado por ciclo
+    let opcionesDisponibles = [];
+
+    if (contadorMenores30 < 4) opcionesDisponibles.push('menor30');
+    if (contadorEntre30y200 < 3) opcionesDisponibles.push('entre30y200');
+    if (contadorMayores200 < 3) opcionesDisponibles.push('mayor200');
+
+    let tipoSeleccionado = opcionesDisponibles[Math.floor(Math.random()*opcionesDisponibles.length)];
+
+    if (tipoSeleccionado === 'menor30'){
+      m = (Math.floor(Math.random() * 30) + 1) * 1000; // 1.000 a 30.000
+      contadorMenores30++;
+    } else if (tipoSeleccionado === 'entre30y200'){
+      m = (Math.floor(Math.random() * 17) + 31) * 1000; // 31.000 a 200.000
+      contadorEntre30y200++;
+    } else {
+      m = (Math.floor(Math.random() * 180) + 21) * 10000; // 210.000 a 2.000.000
+      contadorMayores200++;
+    }
+
+    // Calcular el pago correcto con 5% menos
+    let c = m - Math.floor(m * 0.05);
+
+    let opciones = [];
+
+    if(m <= 200000){
+      let variaciones = [-3000, -2000, -1000, 0, +1000, +2000, +3000];
+      variaciones.sort(() => Math.random() - 0.5);
+      opciones = variaciones.map(v => c + v);
+    } else {
+      let variaciones = [-30000, -20000, -10000, 0, +10000, +20000, +30000];
+      variaciones.sort(() => Math.random() - 0.5);
+      opciones = variaciones.map(v => c + v);
+    }
+
+    // Mostrar en pantalla con formato de miles
+    let h = `<b>Práctica Pago con 5%</b><br><br><b>Postura:</b> ${m.toLocaleString('es-CL')}<br><br>`;
+    opciones.forEach(x => h += `<button onclick="resPago(${x},${c})">${x.toLocaleString('es-CL')}</button><br>`);
+
+    document.getElementById('output').innerHTML = h;
+  }
+
+  function resPago(s, c){
+    document.getElementById('output').innerHTML = (s === c) 
+      ? `✅ <b>Correcto.</b> Se paga ${c.toLocaleString('es-CL')}` 
+      : `❌ <b>Incorrecto.</b> Era ${c.toLocaleString('es-CL')}`;
+  }
+  
+  // Contadores para el ciclo de 10 ejercicios del TIE
+  let contadorTie = 0;
+  let tieMenores10k = 0;
+  let tieEntre10k100k = 0;
+  let tieMayores100k = 0;
+
+  function practicaTIE(){
+    contadorTie++;
+
+    if(contadorTie % 10 === 1){
+      // Reiniciar contadores cada 10 ejercicios
+      tieMenores10k = 0;
+      tieEntre10k100k = 0;
+      tieMayores100k = 0;
+    }
+
+    let m;
+
+    // Definir tipo de monto a generar según los conteos
+    let opcionesDisponibles = [];
+
+    if (tieMenores10k < 3) opcionesDisponibles.push('menor10k');
+    if (tieEntre10k100k < 3) opcionesDisponibles.push('entre10k100k');
+    if (tieMayores100k < 4) opcionesDisponibles.push('mayor100k');
+
+    let tipoSeleccionado = opcionesDisponibles[Math.floor(Math.random() * opcionesDisponibles.length)];
+
+    if(tipoSeleccionado === 'menor10k'){
+      m = (Math.floor(Math.random() * 100) + 1) * 100; // 100 a 10.000
+      tieMenores10k++;
+    } else if(tipoSeleccionado === 'entre10k100k'){
+      m = (Math.floor(Math.random() * 90) + 11) * 1000; // 11.000 a 100.000
+      tieEntre10k100k++;
+    } else {
+      m = (Math.floor(Math.random() * 100) + 101) * 1000; // 101.000 a 200.000
+      tieMayores100k++;
+    }
+
+    // Calcular el pago TIE (8x1)
+    let c = m * 8;
+
+    let opciones = [];
+
+    if(m <= 10000){
+      let variaciones = [-300, -200, -100, 0, +100, +200, +300];
+      variaciones.sort(() => Math.random() - 0.5);
+      opciones = variaciones.map(v => c + v);
+    } else {
+      let variaciones = [-3000, -2000, -1000, 0, +1000, +2000, +3000];
+      variaciones.sort(() => Math.random() - 0.5);
+      opciones = variaciones.map(v => c + v);
+    }
+
+    // Mostrar en pantalla con formato de miles
+    let h = `<b>Práctica Pago del TIE (8x1)</b><br><br><b>Postura:</b> ${m.toLocaleString('es-CL')}<br><br>`;
+    opciones.forEach(x => h += `<button onclick="resTie(${x},${c})">${x.toLocaleString('es-CL')}</button><br>`);
+
+    document.getElementById('output').innerHTML = h;
+  }
+
+  function resTie(s, c){
+    document.getElementById('output').innerHTML = (s === c) 
+      ? `✅ <b>Correcto.</b> Se paga ${c.toLocaleString('es-CL')}` 
+      : `❌ <b>Incorrecto.</b> Era ${c.toLocaleString('es-CL')}`;
+  }
+</script>
+
+</body>
+</html>
